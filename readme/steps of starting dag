@@ -1,0 +1,108 @@
+To start your DAG after system restart, do only these steps. ✅
+
+# 1. SSH into VM
+
+Open terminal.
+
+---
+
+# 2. Activate Airflow Environment
+
+Run:
+
+```bash id="d8y2qf"
+source ~/airflow-env/bin/activate
+```
+
+---
+
+# 3. Start Airflow
+
+Run:
+
+```bash id="p4n7tx"
+airflow standalone
+```
+
+Keep this terminal OPEN.
+
+---
+
+# 4. Open Airflow UI
+
+Open browser:
+
+```text id="x6r1mv"
+http://136.116.97.149:8080
+```
+
+---
+
+# 5. Login
+
+Username:
+
+```text id="n9w4zk"
+admin
+```
+
+Password:
+shown in terminal where `airflow standalone` started.
+
+---
+
+# 6. Turn DAG ON
+
+Find DAG:
+
+```text id="r2v8jy"
+realtime_pipeline_monitoring
+```
+
+Enable toggle if OFF.
+
+---
+
+# 7. Trigger DAG
+
+Click:
+
+```text id="j5m3cx"
+▶ Trigger DAG
+```
+
+Now DAG starts automatically:
+
+* Zookeeper
+* Kafka
+* Generator
+* Enricher
+* Beam pipeline
+
+---
+
+# 8. Verify DAG Running
+
+In Airflow UI:
+
+* tasks should turn GREEN
+
+---
+
+# 9. Verify BigQuery
+
+Run:
+
+```sql id="c3p7vr"
+SELECT
+COUNT(*) AS total_rows,
+MAX(processing_time) AS latest_time
+FROM `project-6e64a1a1-8e69-4a88-93d.realtime_analytics.streaming_metrics`;
+```
+
+If:
+
+* rows increase
+* latest_time updates
+
+then your DAG and full pipeline are working correctly.
