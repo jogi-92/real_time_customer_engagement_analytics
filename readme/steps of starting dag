@@ -106,3 +106,422 @@ If:
 * latest_time updates
 
 then your DAG and full pipeline are working correctly.
+
+
+
+kafka  event-generator1.py  location
+cd /home/jogeswarkonda/kafka_2.13-3.7.0
+
+
+python3 event_generator1.py
+
+
+
+kafka topics 
+(airflow-env) jogeswarkonda@kafka-vm:~/kafka_2.13-3.7.0$ pwd
+/home/jogeswarkonda/kafka_2.13-3.7.0
+(airflow-env) jogeswarkonda@kafka-vm:~/kafka_2.13-3.7.0$ cd ~/kafka_2.13-3.7.0
+(airflow-env) jogeswarkonda@kafka-vm:~/kafka_2.13-3.7.0$ bin/kafka-topics.sh \
+--bootstrap-server localhost:9092 \
+--list
+__consumer_offsets
+enriched_events
+raw_events
+
+
+event_enricher1.py file location 
+cd /home/jogeswarkonda
+python3 event_enricher1.py
+
+
+
+
+how to check enriched event topic 
+cd ~/kafka_2.13-3.7.0
+
+bin/kafka-console-consumer.sh \
+--bootstrap-server localhost:9092 \
+--topic enriched_events
+
+schema 
+{
+  "user_id": "U207",
+  "event": "add_to_cart",
+  "product_id": "P101",
+  "environment": "prod",
+  "timestamp": "2026-05-28 06:27:30",
+  "country": "India",
+  "pipeline_stage": "validated",
+  "is_conversion": false
+}
+
+bq table 
+
+ f"{PROJECT_ID}:realtime_analytics.streaming_metrics",
+ 
+ project id 
+ PROJECT_ID = "project-6e64a1a1-8e69-4a88-93d"
+ 
+ 
+ 1. Start Kafka
+ cd ~/kafka_2.13-3.7.0
+
+nohup bin/kafka-server-start.sh \
+config/server.properties \
+> /tmp/kafka.log 2>&1 &
+ 
+ 
+ beam pipliune check process
+ ps -ef | grep beam_pipeline
+ 
+ 
+ Solution 1 (Recommended)
+
+Go to Dataflow UI and STOP old v6 job.
+
+Then rerun:
+
+pkill -f beam_pipeline1.py
+
+nohup ~/airflow-env/bin/python ~/beam_pipeline1.py > /tmp/beam.log 2>&1 &
+
+
+
+
+6. Monitor Logs
+tail -f /tmp/beam.log
+
+
+
+
+
+
+
+Yes.
+Before testing full orchestration using Airflow DAG, first stop ALL manually running services.
+
+Then DAG itself will:
+
+* start Zookeeper
+* start Kafka
+* start Expansion Service
+* start Event Generator
+* start Event Enricher
+* start Beam/Dataflow job
+* validate BigQuery
+
+Follow EXACTLY these steps.
+
+---
+
+# STEP 1 — Stop Beam Pipeline
+
+```bash
+pkill -f beam_pipeline1.py
+```
+
+Verify:
+
+```bash
+ps -ef | grep beam_pipeline
+```
+
+Should show only:
+
+```text
+grep beam_pipeline
+```
+
+---
+
+# STEP 2 — Stop Event Generator
+
+```bash
+pkill -f event_generator1.py
+```
+
+Verify:
+
+```bash
+ps -ef | grep event_generator
+```
+
+---
+
+# STEP 3 — Stop Event Enricher
+
+```bash
+pkill -f event_enricher1.py
+```
+
+Verify:
+
+```bash
+ps -ef | grep event_enricher
+```
+
+---
+
+# STEP 4 — Stop Expansion Service
+
+```bash
+pkill -f expansion-service
+```
+
+OR:
+
+```bash
+pkill java
+```
+
+Verify:
+
+```bash
+jps
+```
+
+Expansion service should disappear.
+
+---
+
+# STEP 5 — Stop Kafka
+
+```bash
+pkill -f kafka.Kafka
+```
+
+Verify:
+
+```bash
+jps
+```
+
+Kafka should disappear.
+
+---
+
+# STEP 6 — Stop Zookeeper
+
+```bash
+pkill -f QuorumPeerMain
+```
+
+Verify:
+
+```bash
+jps
+```
+
+Now ideally only:
+
+```text
+Jps
+```
+
+should appear.
+
+---
+
+# STEP 7 — Verify Everything Stopped
+
+Run:
+
+```bash
+jps
+```
+
+Expected:
+
+```text
+12345 Jps
+```
+
+ONLY.
+
+---
+
+# STEP 8 — Copy DAG To Airflow DAGs Folder
+
+```bash
+cp ~/realtime_pipeline_monitoring.py ~/airflow/dags/
+```
+
+Verify:
+
+```bash
+ls ~/airflow/dags
+```
+
+You should see:
+
+```text
+realtime_pipeline_monitoring.py
+```
+
+---
+
+# STEP 9 — Start Airflow Scheduler
+
+Open terminal:
+
+```bash
+source ~/airflow-env/bin/activate
+
+airflow scheduler
+```
+
+Keep running.
+
+---
+
+# STEP 10 — Start Airflow Webserver
+
+Open NEW terminal:
+
+```bash
+source ~/airflow-env/bin/activate
+
+airflow webserver --port 8080
+```
+
+Keep running.
+
+---
+
+# STEP 11 — Open Airflow UI
+
+Browser:
+
+```text
+http://YOUR_VM_IP:8080
+```
+
+OR local VM:
+
+```text
+http://localhost:8080
+```
+
+---
+
+# STEP 12 — Enable DAG
+
+Find DAG:
+
+```text
+realtime_pipeline_monitoring
+```
+
+Turn ON toggle.
+
+---
+
+# STEP 13 — Trigger DAG
+
+Click:
+
+```text
+▶ Trigger DAG
+```
+
+---
+
+# STEP 14 — Monitor DAG Tasks
+
+You should see tasks running in order:
+
+```text
+start_zookeeper
+↓
+start_kafka
+↓
+start_expansion_service
+↓
+start_generator
+↓
+start_enricher
+↓
+start_beam_pipeline
+↓
+monitor_dataflow
+↓
+validate_bigquery
+```
+
+---
+
+# STEP 15 — Verify Dataflow
+
+Open:
+
+```text
+GCP Console → Dataflow
+```
+
+You should see:
+
+```text
+advanced-kafka-analytics-vX
+```
+
+Running.
+
+---
+
+# STEP 16 — Verify BigQuery
+
+Run:
+
+```sql
+SELECT *
+FROM `project-6e64a1a1-8e69-4a88-93d.realtime_analytics.streaming_metrics`
+ORDER BY processing_time DESC
+LIMIT 20;
+```
+
+You should see fresh rows loading.
+
+---
+
+# FINAL RESULT
+
+Now Airflow fully controls entire streaming architecture automatically:
+
+```text
+Airflow
+   ↓
+Zookeeper
+   ↓
+Kafka
+   ↓
+Expansion Service
+   ↓
+Event Generator
+   ↓
+Event Enricher
+   ↓
+Beam/Dataflow
+   ↓
+BigQuery
+```
+
+That is proper orchestration.
+
+
+
+
+
+SELECT
+    DATETIME(processing_time, "Asia/Kolkata") AS india_time,
+    *
+FROM `project-6e64a1a1-8e69-4a88-93d.realtime_analytics.streaming_metrics`
+ORDER BY processing_time DESC
+LIMIT 20;
+
+
+
+SELECT *
+FROM `project-6e64a1a1-8e69-4a88-93d.realtime_analytics.streaming_metrics`
+WHERE DATE(processing_time) = CURRENT_DATE()
+ORDER BY processing_time DESC
+LIMIT 20;

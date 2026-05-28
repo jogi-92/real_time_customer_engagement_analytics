@@ -1,0 +1,96 @@
+event_generator.py sample data
+(airflow-env) jogeswarkonda@kafka-vm:~/kafka_2.13-3.7.0$ python3 event_generator1.py
+Event Generator Started...
+Sent: {'user_id': 'U885', 'event': 'add_to_cart', 'product_id': 'P101', 'environment': 'dev', 'timestamp': '2026-05-28 05:00:54'}
+Sent: {'user_id': 'U393', 'event': 'add_to_cart', 'product_id': 'P102', 'environment': 'prod', 'timestamp': '2026-05-28 05:00:56'}
+Sent: {'user_id': 'U794', 'event': 'checkout', 'product_id': 'P101', 'environment': 'prod', 'timestamp': '2026-05-28 05:00:58'}
+Sent: {'user_id': 'U424', 'event': 'view_product', 'product_id': 'P101', 'environment': 'test', 'timestamp': '2026-05-28 05:01:00'}
+Sent: {'user_id': 'U668', 'event': 'purchase', 'product_id': 'P102', 'environment': 'test', 'timestamp': '2026-05-28 05:01:02'}
+Sent: {'user_id': 'U993', 'event': 'view_product', 'product_id': 'P100', 'environment': 'dev', 'timestamp': '2026-05-28 05:01:04'}
+Sent: {'user_id': 'U793', 'event': 'view_product', 'product_id': 'P102', 'environment': 'dev', 'timestamp': '2026-05-28 05:01:06'}
+Sent: {'user_id': 'U127', 'event': 'checkout', 'product_id': 'P100', 'environment': 'prod', 'timestamp': '2026-05-28 05:01:08'}
+
+
+
+
+Your event_generator1.py is generating this Kafka event schema:
+
+{
+  "user_id": "U885",
+  "event": "add_to_cart",
+  "product_id": "P101",
+  "environment": "dev",
+  "timestamp": "2026-05-28 05:00:54"
+}
+
+
+
+or
+user_id        STRING
+event          STRING
+product_id     STRING
+environment    STRING
+timestamp      STRING
+
+
+
+
+event_enricher.py sample data
+
+jogeswarkonda@kafka-vm:~$ python3 event_enricher.py
+Enriched: {'user_id': 'U516', 'event': 'add_to_cart', 'product_id': 'P101', 'environment': 'prod', 'timestamp': '2026-05-28 05:05:49', 'country': 'India', 'pipeline_stage': 'validated', 'is_conversion': False}
+Dropped: {'user_id': 'U691', 'event': 'checkout', 'product_id': 'P101', 'environment': 'test', 'timestamp': '2026-05-28 05:05:49'}
+Enriched: {'user_id': 'U676', 'event': 'checkout', 'product_id': 'P101', 'environment': 'prod', 'timestamp': '2026-05-28 05:05:50', 'country': 'India', 'pipeline_stage': 'validated', 'is_conversion': False}
+Dropped: {'user_id': 'U859', 'event': 'add_to_cart', 'product_id': 'P101', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U393', 'event': 'add_to_cart', 'product_id': 'P102', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U370', 'event': 'view_product', 'product_id': 'P100', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:50'}
+Enriched: {'user_id': 'U472', 'event': 'checkout', 'product_id': 'P102', 'environment': 'prod', 'timestamp': '2026-05-28 05:05:50', 'country': 'India', 'pipeline_stage': 'validated', 'is_conversion': False}
+Dropped: {'user_id': 'U503', 'event': 'add_to_cart', 'product_id': 'P102', 'environment': 'test', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U136', 'event': 'checkout', 'product_id': 'P100', 'environment': 'test', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U419', 'event': 'checkout', 'product_id': 'P100', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U921', 'event': 'view_product', 'product_id': 'P100', 'environment': 'test', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U625', 'event': 'view_product', 'product_id': 'P101', 'environment': 'test', 'timestamp': '2026-05-28 05:05:50'}
+Dropped: {'user_id': 'U513', 'event': 'view_product', 'product_id': 'P101', 'environment': 'test', 'timestamp': '2026-05-28 05:05:51'}
+Dropped: {'user_id': 'U312', 'event': 'checkout', 'product_id': 'P101', 'environment': 'test', 'timestamp': '2026-05-28 05:05:51'}
+Enriched: {'user_id': 'U268', 'event': 'checkout', 'product_id': 'P101', 'environment': 'prod', 'timestamp': '2026-05-28 05:05:51', 'country': 'India', 'pipeline_stage': 'validated', 'is_conversion': False}
+Dropped: {'user_id': 'U203', 'event': 'add_to_cart', 'product_id': 'P102', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:52'}
+Dropped: {'user_id': 'U281', 'event': 'purchase', 'product_id': 'P100', 'environment': 'test', 'timestamp': '2026-05-28 05:05:52'}
+Dropped: {'user_id': 'U674', 'event': 'checkout', 'product_id': 'P100', 'environment': 'test', 'timestamp': '2026-05-28 05:05:52'}
+Dropped: {'user_id': 'U376', 'event': 'checkout', 'product_id': 'P100', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:52'}
+Dropped: {'user_id': 'U571', 'event': 'checkout', 'product_id': 'P102', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:52'}
+Dropped: {'user_id': 'U766', 'event': 'checkout', 'product_id': 'P100', 'environment': 'dev', 'timestamp': '2026-05-28 05:05:52'}
+Enriched: {'user_id': 'U144', 'event': 'purchase', 'product_id':
+ 'P100', 'environment': 'prod', 'timestamp': '2026-05-28 05:05:52',
+  'country': 'India', 'pipeline_stage': 'validated', 'is_conversion': True}
+
+
+event_enricher1.py schema
+
+{
+  "user_id": "U193",
+  "event": "checkout",
+  "product_id": "P100",
+  "environment": "prod",
+  "timestamp": "2026-05-27 12:25:11",
+  "country": "India",
+  "pipeline_stage": "validated",
+  "is_conversion": false
+}
+
+
+create topic  dead-letter 
+cd ~/kafka_2.13-3.7.0
+
+bin/kafka-topics.sh \
+--bootstrap-server localhost:9092 \
+--create \
+--topic dead_letter \
+--partitions 1 \
+--replication-factor 1
+
+
+
+create new file event_generator1.py
+
+
+
