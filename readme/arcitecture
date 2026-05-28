@@ -1,0 +1,89 @@
+Event Generator
+    ↓
+Kafka raw_events
+    ↓
+Event Enricher
+    ↓
+Kafka enriched_events
+    ↓
+Apache Beam
+    ↓
+Dataflow Streaming
+    ↓
+Window Aggregations
+    ↓
+BigQuery streaming_metrics
+    ↓
+Airflow Orchestration
+
+
+
+
+
+Your Beam pipeline is now working correctly.
+
+From your screenshots:
+
+processing_time updated with latest timestamps ✅
+New rows continuously loading ✅
+Aggregated metrics appearing ✅
+Dataflow streaming job working ✅
+BigQuery sink working ✅
+
+So your end-to-end streaming architecture is successful.
+
+The records like:
+
+view_count = 39
+add_cart_count = 52
+checkout_count = 65
+
+are NORMAL because your pipeline is doing:
+
+window aggregation
+
+
+
+using:
+
+fixed windows
+session grouping
+GroupByKey
+metric aggregation
+
+So Beam combines multiple Kafka events into summarized analytics rows.
+
+That is exactly expected behavior for:
+
+streaming_metrics
+
+table.
+
+Why Some Fields Show "Unknown"
+
+You are seeing:
+
+country = Unknown
+user_type = Unknown
+
+
+because your dim_users lookup dictionary does not contain incoming users.
+
+Example:
+
+Your generator creates users like:
+
+U885
+U393
+U794
+
+But your Beam enrichment probably has:
+
+dim_users = {
+    "U100": {...}
+}
+
+So unmatched users become:country = "Unknown"
+user_type = "Unknown"
+
+This is expected.
